@@ -1,112 +1,352 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+} from 'react-native';
+import { useState } from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { userService } from '@/services/userService';
+import { UserProfileForm } from '@/components/UserProfileForm';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+export default function ProfileScreen() {
+  const { profile, loading, saveProfile } = useUserProfile();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-export default function TabTwoScreen() {
+  const handleSaveProfile = async (data: any) => {
+    try {
+      setIsSubmitting(true);
+      await saveProfile(data);
+      setIsEditing(false);
+      Alert.alert('Éxito', 'Perfil actualizado correctamente');
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo guardar el perfil');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+      </View>
+    );
+  }
+
+  if (isEditing) {
+    return (
+      <View style={styles.container}>
+        <UserProfileForm
+          profile={profile || undefined}
+          onSubmit={handleSaveProfile}
+          onCancel={() => setIsEditing(false)}
+          isLoading={isSubmitting}
+        />
+      </View>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.emptyContainer}>
+          <MaterialIcons name="person-add" size={64} color="#D1D5DB" />
+          <Text style={styles.emptyText}>No tienes perfil creado</Text>
+          <Text style={styles.emptySubtext}>
+            Completa tu información personal para comenzar
+          </Text>
+          <TouchableOpacity
+            style={styles.createButton}
+            onPress={() => setIsEditing(true)}
+          >
+            <MaterialIcons name="add" size={24} color="#FFFFFF" />
+            <Text style={styles.createButtonText}>Crear Perfil</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  const bmi = userService.calculateBMI(profile.weight, profile.height);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ScrollView style={styles.container}>
+      <View style={styles.headerCard}>
+        <MaterialIcons name="account-circle" size={80} color="#3B82F6" />
+        <Text style={styles.name}>{profile.name}</Text>
+        <Text style={styles.email}>{profile.email}</Text>
+      </View>
+
+      <View style={styles.statsGrid}>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Edad</Text>
+          <Text style={styles.statValue}>{profile.age}</Text>
+          <Text style={styles.statUnit}>años</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Peso</Text>
+          <Text style={styles.statValue}>{profile.weight}</Text>
+          <Text style={styles.statUnit}>kg</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Estatura</Text>
+          <Text style={styles.statValue}>{profile.height}</Text>
+          <Text style={styles.statUnit}>cm</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>IMC</Text>
+          <Text style={[styles.statValue, { color: getBMIColor(bmi) }]}>{bmi}</Text>
+          <Text style={styles.statUnit}>{getBMICategory(bmi)}</Text>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Información Personal</Text>
+
+        <View style={styles.infoRow}>
+          <View style={styles.infoIconContainer}>
+            <MaterialIcons name="wc" size={24} color="#3B82F6" />
+          </View>
+          <View style={styles.infoContent}>
+            <Text style={styles.infoLabel}>Género</Text>
+            <Text style={styles.infoValue}>
+              {profile.gender === 'M'
+                ? 'Masculino'
+                : profile.gender === 'F'
+                ? 'Femenino'
+                : 'Otro'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.infoRow}>
+          <View style={styles.infoIconContainer}>
+            <MaterialIcons name="cake" size={24} color="#3B82F6" />
+          </View>
+          <View style={styles.infoContent}>
+            <Text style={styles.infoLabel}>Fecha de Nacimiento</Text>
+            <Text style={styles.infoValue}>
+              {new Date(profile.birthDate).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.infoRow}>
+          <View style={styles.infoIconContainer}>
+            <MaterialIcons name="email" size={24} color="#3B82F6" />
+          </View>
+          <View style={styles.infoContent}>
+            <Text style={styles.infoLabel}>Email</Text>
+            <Text style={styles.infoValue}>{profile.email}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.buttonGroup}>
+        <TouchableOpacity
+          style={[styles.button, styles.editButton]}
+          onPress={() => setIsEditing(true)}
+        >
+          <MaterialIcons name="edit" size={20} color="#FFFFFF" />
+          <Text style={styles.buttonText}>Editar Perfil</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.spacer} />
+    </ScrollView>
   );
 }
 
+function getBMIColor(bmi: number): string {
+  if (bmi < 18.5) return '#3B82F6'; // Bajo peso
+  if (bmi < 25) return '#10B981'; // Normal
+  if (bmi < 30) return '#F59E0B'; // Sobrepeso
+ // return '#EF4444'; // Obesidad
+ return '#10B981'; // Normal
+}
+
+function getBMICategory(bmi: number): string {
+  if (bmi < 18.5) return 'Bajo peso';
+  if (bmi < 25) return 'Normal';
+  if (bmi < 30) return 'Sobrepeso';
+  //return 'Obesidad';
+  return 'Normal';
+}
+
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
   },
-  titleContainer: {
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 8,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  createButton: {
     flexDirection: 'row',
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
     gap: 8,
+  },
+  createButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  headerCard: {
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginTop: 12,
+  },
+  email: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    gap: 12,
+    marginBottom: 16,
+  },
+  statItem: {
+    flex: 1,
+    minWidth: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#3B82F6',
+  },
+  statUnit: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    marginTop: 4,
+  },
+  section: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 12,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  infoIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#EFF6FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  infoContent: {
+    flex: 1,
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#1F2937',
+    fontWeight: '500',
+  },
+  buttonGroup: {
+    paddingHorizontal: 16,
+    marginVertical: 16,
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  editButton: {
+    backgroundColor: '#3B82F6',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  spacer: {
+    height: 20,
   },
 });
