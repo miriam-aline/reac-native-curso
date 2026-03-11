@@ -18,6 +18,15 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'checkmark.circle.fill': 'task-alt',
+  'plus.circle.fill': 'add-circle',
+  'fork.knife': 'restaurant',
+  'flame.fill': 'local-fire-department',
+  'person.crop.circle.fill': 'account-circle',
+  'wallet.pass.fill': 'account-balance-wallet',
+  'tray.full.fill': 'inventory-2',
+  'dumbbell.fill': 'fitness-center',
+  'chart.line.uptrend.xyaxis': 'show-chart',
 } as IconMapping;
 
 /**

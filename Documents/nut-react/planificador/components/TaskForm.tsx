@@ -54,6 +54,13 @@ export const TaskForm = ({
 
     try {
       await onSubmit(title, description, dueDate.toISOString());
+
+      if (!task) {
+        setTitle('');
+        setDescription('');
+        setDueDate(new Date());
+        setShowDatePicker(false);
+      }
     } catch (error) {
       Alert.alert('Error', 'No se pudo guardar la tarea');
     }

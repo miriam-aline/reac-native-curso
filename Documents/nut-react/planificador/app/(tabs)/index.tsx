@@ -19,7 +19,7 @@ export default function HomeScreen() {
           onPress: async () => {
             try {
               await deleteTask(id);
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'No se pudo eliminar la tarea');
             }
           },
