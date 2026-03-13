@@ -178,6 +178,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="body-progress"
           options={{
+            href: null,
             title: 'Avances',
             tabBarLabel: 'Avances',
             tabBarIcon: ({ color }) => <IconSymbol size={24} name="chart.line.uptrend.xyaxis" color={color} />,
